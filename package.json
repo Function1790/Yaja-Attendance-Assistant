@@ -1,0 +1,31 @@
+{
+  "name": "seoryonggodang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node app.js",
+    "client": "cd client && yarn start",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "start": "yarn server && yarn client"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "console": "^0.7.2",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "fs": "^0.0.1-security",
+    "memorystore": "^1.6.7",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "path": "^0.12.7",
+    "socket.io": "^4.7.5",
+    "util": "^0.12.5",
+    "uuid4": "^2.0.3",
+    "zlib": "^1.0.5"
+  }
+}
