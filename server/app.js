@@ -177,11 +177,17 @@ app.get('/', async (req, res) => {
             additionalClass = 'wait'
         }
         if (seatData[i].isSit) {
+            additionalClass = 'sit'
+        }
+        if (seatData[i].isWait && seatData[i].isSit) {
             additionalClass = 'check'
         }
         seatHTML += `
         <a href="/check/${index}">
-            <div class="seat ${additionalClass}">${index}</div>
+            <div class="seat ${additionalClass}">
+                <div class="title">${index}</div>
+                <div class="content">${seatData[i].schoolid ? seatData[i].schoolid : ''}</div>
+            </div>
         </a>`
     }
     await sendRender(req, res, './views/index.html', {
@@ -207,8 +213,9 @@ app.get('/check/:index', (req, res) => {
         return
     }
     const targetSeat = seatData[req.params.index]
-    if (targetSeat.isWait == true) {
-
+    if (targetSeat.isSit === false) {
+        res.send(forcedMoveWithAlertCode(`착석하시오.`, '/'))
+        return
     }
 
     const beforeSeatIndex = findSeatIndexBySchoolID(req.session.schoolid)
@@ -223,7 +230,10 @@ app.get('/check/:index', (req, res) => {
 })
 
 app.post('/set/data', (req, res) => {
-    const body =  req.body
+    const data = req.body.data
+    for (var i in data) {
+        seatData[i].isSit = Number(data[i])
+    }
     res.status(200).send('OK')
 })
 

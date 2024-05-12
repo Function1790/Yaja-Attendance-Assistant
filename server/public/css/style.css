@@ -75,6 +75,10 @@ body {
     background-color: #96ff83;
 }
 
+.sit {
+    background-color: #a9fbff;
+}
+
 .inputWrap {
     margin-top: 5vw;
 }
@@ -117,4 +121,12 @@ input {
 .submit:hover {
     background-color: #555;
     color: white;
+}
+
+.seat {
+    flex-direction: column;
+}
+
+.content {
+    font-size: 2vw;
 }
