@@ -26,16 +26,16 @@ def sortDeskByPosition(posList: list) -> list:
             y1 = i * deltaY + minY
             y2 = (i + 1) * deltaY + minY
             for n in posList:
-                if x1 <= n[0] <= x2 and y1 <= n[1] <= y2:
+                if x1 <= n[0] < x2 and y1 <= n[1] < y2:
                     result.append(n[2])
     # print(minX, minY, x2, y2)
     return result
 
 
 def isCrashBetween(p1, p2):
-    if (p1[2] < p2[0] or p1[0] > p2[2]):
+    if p1[2] < p2[0] or p1[0] > p2[2]:
         return 0
-    if (p1[3] < p2[1] or p1[1] > p2[3]):
+    if p1[3] < p2[1] or p1[1] > p2[3]:
         return 0
     return 1
 
@@ -47,7 +47,6 @@ def getCrashSeatIndex(person, seats):
             return i
     return -1
 
-
 cap = cv2.VideoCapture(0)  # For Webcam
 cap.set(3, 1280)
 cap.set(4, 720)
@@ -56,17 +55,88 @@ cap.set(4, 720)
 
 model = YOLO("../Yolo-Weights/yolov8n.pt")
 
-classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-              "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
-              "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-              "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
-              "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
-              "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
-              "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
-              "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
-              "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
-              "teddy bear", "hair drier", "toothbrush"
-              ]
+classNames = [
+    "person",
+    "bicycle",
+    "car",
+    "motorbike",
+    "aeroplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "sofa",
+    "pottedplant",
+    "bed",
+    "diningtable",
+    "toilet",
+    "tvmonitor",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush",
+]
 # mask = cv2.imread("mask.png")
 
 # Tracking
@@ -99,7 +169,12 @@ while True:
             cls = int(box.cls[0])
             currentClass = classNames[cls]
 
-            if currentClass == "diningtable" or currentClass == "book" or currentClass == "chair" and conf > 0.3:
+            if (
+                currentClass == "diningtable"
+                or currentClass == "book"
+                or currentClass == "chair"
+                and conf > 0.3
+            ):
                 # cvzone.putTextRect(img,f'{classNames[cls]}{conf}',(max(0,x1),max(35,y1)),scale=0.6,thickness=1,offset=3)
                 # 좌석일 경우
                 cvzone.cornerRect(img, (x1, y1, w, h), l=9)
@@ -126,25 +201,30 @@ while True:
         # print(result)
         w, h = x2 - x1, y2 - y1
         cvzone.cornerRect(img, (x1, y1, w, h), l=9, rt=2, colorR=(255, 0, 0))
-        cvzone.putTextRect(img, f'{classNames[cls]}{int(Id)}', (max(0, x1), max(35, y1)), scale=2, thickness=1,
-                           offset=10)
+        cvzone.putTextRect(
+            img,
+            f"{classNames[cls]}{int(Id)}",
+            (max(0, x1), max(35, y1)),
+            scale=2,
+            thickness=1,
+            offset=10,
+        )
 
     print()
+    #좌석 배치에 따라 정렬하기
     sortedIndexes = sortDeskByPosition(positionList)
     for person in resultPerson:
+        # 충돌한 의자 고윳값 찾기
         index = getCrashSeatIndex(person, resultsTracker)
-        seatsList[index][5] = 1
+        seatsList[index][5] = 1 # 충돌한 의자의 충돌 여부를 1로 설정
 
     data = []
     for i in sortedIndexes:
-        # data.append([int(seatsList[i][4]), seatsList[i][5]])
         data.append(seatsList[i][5])
 
     # print(data)
     try:
-        response = requests.post('http://127.0.0.1:5500/set/data', data={
-            "data": data
-        })
+        response = requests.post("http://127.0.0.1:5500/set/data", data={"data": data})
     except:
         pass
     cv2.imshow("Image", img)
